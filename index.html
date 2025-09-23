@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Calendar</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px 0;
+        }
+        
+        .calendar-header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e9ecef;
+            margin: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .day-header {
+            background: #495057;
+            color: white;
+            padding: 15px 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .calendar-day {
+            background: white;
+            padding: 10px 5px;
+            min-height: 100px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .calendar-day:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .calendar-day.today {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .event {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 2px 6px;
+            margin: 1px 0;
+            border-radius: 10px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .event:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ff5722);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .date-picker-container {
+            margin: 20px;
+            text-align: center;
+        }
+        
+        .date-picker {
+            background: white;
+            border: 2px solid #4facfe;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            color: #495057;
+        }
+        
+        .events-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .event-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-grid {
+                margin: 10px;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px 2px;
+            }
+            
+            .day-header {
+                padding: 10px 2px;
+                font-size: 0.8em;
+            }
+            
+            .event {
+                font-size: 0.65em;
+                padding: 1px 4px;
+            }
+            
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button class="nav-btn" id="prevMonth">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div>
+                                <h2 id="currentMonth" class="mb-0"></h2>
+                                <p class="mb-0" id="currentYear"></p>
+                            </div>
+                            <button class="nav-btn" id="nextMonth">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                                <i class="fas fa-plus"></i> Add Event
+                            </button>
+                            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#datePickerModal">
+                                <i class="fas fa-calendar"></i> Go to Date
+                            </button>
+                            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#eventsListModal">
+                                <i class="fas fa-list"></i> View All Events
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal fade" id="addEventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Event
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventForm">
+                        <div class="mb-3">
+                            <label for="eventTitle" class="form-label">Event Title</label>
+                            <input type="text" class="form-control" id="eventTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="eventDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventTime" class="form-label">Time</label>
+                            <input type="time" class="form-control" id="eventTime">
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventCategory" class="form-label">Category</label>
+                            <select class="form-select" id="eventCategory">
+                                <option value="personal">Personal</option>
+                                <option value="work">Work</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="reminder">Reminder</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="recurYearly">
+                                <label class="form-check-label" for="recurYearly">
+                                    <i class="fas fa-redo-alt me-2"></i>
+                                    <strong>Repeat every year</strong>
+                                    <small class="text-muted d-block">Perfect for birthdays, anniversaries, and holidays</small>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveEvent">
+                        <i class="fas fa-save me-1"></i>Save Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div class="modal fade" id="datePickerModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Go to Date
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <input type="date" class="date-picker" id="gotoDate">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="goToDate">Go</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events List Modal -->
+    <div class="modal fade" id="eventsListModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-list me-2"></i>All Events
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="eventsList" class="events-list">
+                        <!-- Events will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div class="modal fade" id="eventDetailsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Event Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="eventDetailsContent">
+                    <!-- Event details will be shown here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteEvent">
+                        <i class="fas fa-trash me-1"></i>Delete Event
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    
+    <script>
+        class EventCalendar {
+            constructor() {
+                this.currentDate = new Date();
+                this.events = this.loadEvents();
+                this.selectedEventId = null;
+                this.monthNames = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+                this.dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                
+                this.init();
+            }
+            
+            init() {
+                this.renderCalendar();
+                this.bindEvents();
+                this.setDefaultDate();
+            }
+            
+            loadEvents() {
+                const saved = localStorage.getItem('calendarEvents');
+                return saved ? JSON.parse(saved) : {};
+            }
+            
+            saveEvents() {
+                localStorage.setItem('calendarEvents', JSON.stringify(this.events));
+            }
+            
+            bindEvents() {
+                $('#prevMonth').click(() => this.previousMonth());
+                $('#nextMonth').click(() => this.nextMonth());
+                $('#saveEvent').click(() => this.saveEvent());
+                $('#goToDate').click(() => this.goToSelectedDate());
+                
+                // Use event delegation for delete button since it's in a modal
+                $(document).on('click', '#deleteEvent', () => this.deleteEvent());
+                
+                // Set today's date as default for new events
+                $('#addEventModal').on('shown.bs.modal', () => {
+                    const today = new Date();
+                    $('#eventDate').val(today.toISOString().split('T')[0]);
+                });
+                
+                // Update events list when modal is shown
+                $('#eventsListModal').on('shown.bs.modal', () => {
+                    this.renderEventsList();
+                });
+                
+                // Clear selected event when event details modal is hidden
+                $('#eventDetailsModal').on('hidden.bs.modal', () => {
+                    this.selectedEventId = null;
+                });
+                
+                // Refresh calendar when event list modal is hidden
+                $('#eventsListModal').on('hidden.bs.modal', () => {
+                    this.renderCalendar();
+                });
+            }
+            
+            setDefaultDate() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+                $('#gotoDate').val(todayStr);
+            }
+            
+            previousMonth() {
+                this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                this.renderCalendar();
+            }
+            
+            nextMonth() {
+                this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                this.renderCalendar();
+            }
+            
+            goToSelectedDate() {
+                const selectedDate = $('#gotoDate').val();
+                if (selectedDate) {
+                    this.currentDate = new Date(selectedDate);
+                    this.renderCalendar();
+                    $('#datePickerModal').modal('hide');
+                }
+            }
+            
+            getEventsForDate(dateStr) {
+                const events = [];
+                
+                // Parse the date string to avoid timezone issues
+                const [year, month, day] = dateStr.split('-').map(num => parseInt(num));
+                const targetMonth = month; // Already 1-based from our date string
+                const targetDay = day;
+                
+                // Add direct events for this date
+                if (this.events[dateStr]) {
+                    this.events[dateStr].forEach((event, index) => {
+                        events.push({
+                            event: event,
+                            originalDate: dateStr,
+                            originalIndex: index
+                        });
+                    });
+                }
+                
+                // Add yearly recurring events
+                Object.keys(this.events).forEach(originalDate => {
+                    // Parse original date to avoid timezone issues
+                    const [origYear, origMonth, origDay] = originalDate.split('-').map(num => parseInt(num));
+                    
+                    // Check if month and day match (but different year)
+                    if (origMonth === targetMonth && origDay === targetDay && originalDate !== dateStr) {
+                        this.events[originalDate].forEach((event, index) => {
+                            if (event.recurYearly) {
+                                events.push({
+                                    event: event,
+                                    originalDate: originalDate,
+                                    originalIndex: index,
+                                    isRecurring: true
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                return events;
+            }
+            
+            renderCalendar() {
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                
+                $('#currentMonth').text(this.monthNames[month]);
+                $('#currentYear').text(year);
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const startDate = new Date(firstDay);
+                startDate.setDate(startDate.getDate() - firstDay.getDay());
+                
+                let html = '';
+                
+                // Day headers
+                this.dayNames.forEach(day => {
+                    html += `<div class="day-header">${day}</div>`;
+                });
+                
+                // Calendar days
+                const currentDate = new Date(startDate);
+                for (let week = 0; week < 6; week++) {
+                    for (let day = 0; day < 7; day++) {
+                        // Use local date string to avoid timezone issues
+                        const year = currentDate.getFullYear();
+                        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                        const dayNum = String(currentDate.getDate()).padStart(2, '0');
+                        const dateStr = `${year}-${month}-${dayNum}`;
+                        
+                        const isCurrentMonth = currentDate.getMonth() === this.currentDate.getMonth();
+                        const isToday = this.isToday(currentDate);
+                        
+                        let dayClass = 'calendar-day';
+                        if (!isCurrentMonth) dayClass += ' other-month';
+                        if (isToday) dayClass += ' today';
+                        
+                        // Get both direct events and yearly recurring events for this date
+                        const dayEvents = this.getEventsForDate(dateStr);
+                        let eventsHtml = '';
+                        dayEvents.forEach((eventData, index) => {
+                            const event = eventData.event;
+                            const eventKey = eventData.originalDate + '_' + eventData.originalIndex;
+                            eventsHtml += `<div class="event" onclick="calendar.showEventDetails('${eventData.originalDate}', ${eventData.originalIndex})" title="${event.title}">${event.title}</div>`;
+                        });
+                        
+                        html += `
+                            <div class="${dayClass}" onclick="calendar.selectDate('${dateStr}')">
+                                <div class="day-number">${currentDate.getDate()}</div>
+                                ${eventsHtml}
+                            </div>
+                        `;
+                        
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                }
+                
+                $('#calendarGrid').html(html);
+            }
+            
+            isToday(date) {
+                const today = new Date();
+                return date.toDateString() === today.toDateString();
+            }
+            
+            selectDate(dateStr) {
+                $('#eventDate').val(dateStr);
+                $('#addEventModal').modal('show');
+            }
+            
+            saveEvent() {
+                const title = $('#eventTitle').val().trim();
+                const date = $('#eventDate').val();
+                const time = $('#eventTime').val();
+                const description = $('#eventDescription').val().trim();
+                const category = $('#eventCategory').val();
+                const recurYearly = $('#recurYearly').prop('checked');
+                
+                if (!title || !date) {
+                    alert('Please fill in the required fields (Title and Date)');
+                    return;
+                }
+                
+                const event = {
+                    id: Date.now() + Math.random(),
+                    title,
+                    date,
+                    time,
+                    description,
+                    category,
+                    recurYearly
+                };
+                
+                if (!this.events[date]) {
+                    this.events[date] = [];
+                }
+                
+                this.events[date].push(event);
+                this.events[date].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+                
+                this.saveEvents();
+                this.renderCalendar();
+                
+                // Reset form
+                $('#eventForm')[0].reset();
+                $('#addEventModal').modal('hide');
+                
+                // Show success message
+                const message = recurYearly ? 'Yearly recurring event saved successfully!' : 'Event saved successfully!';
+                this.showToast(message, 'success');
+            }
+            
+            showEventDetails(dateStr, eventIndex) {
+                // Validate event exists before showing details
+                if (!this.events[dateStr] || !this.events[dateStr][eventIndex]) {
+                    this.showToast('Event not found!', 'error');
+                    return;
+                }
+                
+                const event = this.events[dateStr][eventIndex];
+                this.selectedEventId = { date: dateStr, index: eventIndex };
+                
+                const formattedDate = new Date(dateStr).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const timeStr = event.time ? new Date(`1970-01-01T${event.time}`).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'All day';
+                
+                const recurringBadge = event.recurYearly ? '<span class="badge bg-success ms-2"><i class="fas fa-redo-alt me-1"></i>Yearly</span>' : '';
+                
+                const html = `
+                    <div class="event-details">
+                        <h4 class="text-primary">${event.title}${recurringBadge}</h4>
+                        <div class="mb-2">
+                            <i class="fas fa-calendar text-muted me-2"></i>
+                            <strong>Date:</strong> ${formattedDate}
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-clock text-muted me-2"></i>
+                            <strong>Time:</strong> ${timeStr}
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-tag text-muted me-2"></i>
+                            <strong>Category:</strong> <span class="badge bg-secondary">${event.category}</span>
+                        </div>
+                        ${event.recurYearly ? `
+                        <div class="mb-2">
+                            <i class="fas fa-info-circle text-muted me-2"></i>
+                            <strong>Recurring:</strong> <span class="text-success">This event repeats every year on ${new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
+                        </div>
+                        ` : ''}
+                        ${event.description ? `
+                        <div class="mb-2">
+                            <i class="fas fa-align-left text-muted me-2"></i>
+                            <strong>Description:</strong>
+                            <div class="mt-1 p-2 bg-light rounded">${event.description}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                $('#eventDetailsContent').html(html);
+                $('#eventDetailsModal').modal('show');
+            }
+            
+            deleteEvent() {
+                if (!this.selectedEventId) {
+                    this.showToast('No event selected for deletion', 'error');
+                    return;
+                }
+                
+                const { date, index } = this.selectedEventId;
+                
+                // Check if the event exists
+                if (!this.events[date] || !this.events[date][index]) {
+                    this.showToast('Event not found!', 'error');
+                    $('#eventDetailsModal').modal('hide');
+                    return;
+                }
+                
+                const event = this.events[date][index];
+                
+                let confirmMessage = 'Are you sure you want to delete this event?';
+                if (event.recurYearly) {
+                    confirmMessage = 'Are you sure you want to delete this yearly recurring event? This will remove it from all years.';
+                }
+                
+                if (confirm(confirmMessage)) {
+                    try {
+                        // Remove the event
+                        this.events[date].splice(index, 1);
+                        
+                        // If no more events on this date, remove the date key
+                        if (this.events[date].length === 0) {
+                            delete this.events[date];
+                        }
+                        
+                        // Save changes to localStorage
+                        this.saveEvents();
+                        
+                        // Close the modal first
+                        $('#eventDetailsModal').modal('hide');
+                        
+                        // Wait for modal to close, then refresh calendar
+                        setTimeout(() => {
+                            this.renderCalendar();
+                            this.showToast('Event deleted successfully!', 'success');
+                        }, 300);
+                        
+                        // Clear selected event
+                        this.selectedEventId = null;
+                        
+                    } catch (error) {
+                        console.error('Error deleting event:', error);
+                        this.showToast('Error deleting event!', 'error');
+                    }
+                }
+            }
+            
+            renderEventsList() {
+                let html = '';
+                const allEvents = [];
+                
+                // Collect all events including recurring ones
+                Object.keys(this.events).forEach(date => {
+                    this.events[date].forEach((event, index) => {
+                        allEvents.push({
+                            event: event,
+                            date: date,
+                            index: index
+                        });
+                    });
+                });
+                
+                // Sort events by date
+                allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                if (allEvents.length === 0) {
+                    html = '<div class="text-center text-muted p-4"><i class="fas fa-calendar-times fa-3x mb-3"></i><p>No events found</p></div>';
+                } else {
+                    allEvents.forEach(eventData => {
+                        const event = eventData.event;
+                        const date = eventData.date;
+                        const index = eventData.index;
+                        
+                        const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        const timeStr = event.time ? new Date(`1970-01-01T${event.time}`).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : 'All day';
+                        
+                        const recurringBadge = event.recurYearly ? '<span class="badge bg-success ms-2"><i class="fas fa-redo-alt me-1"></i>Yearly</span>' : '';
+                        
+                        html += `
+                            <div class="event-item" onclick="calendar.showEventDetailsFromList('${date}', ${index})">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 text-primary">${event.title}${recurringBadge}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>${formattedDate}
+                                            <i class="fas fa-clock ms-2 me-1"></i>${timeStr}
+                                        </small>
+                                        ${event.description ? `<p class="mb-1 mt-2">${event.description}</p>` : ''}
+                                        ${event.recurYearly ? `<small class="text-success"><i class="fas fa-info-circle me-1"></i>Repeats every year</small>` : ''}
+                                    </div>
+                                    <span class="badge bg-secondary">${event.category}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                $('#eventsList').html(html);
+            }
+            
+            showEventDetailsFromList(dateStr, eventIndex) {
+                // Close the events list modal first
+                $('#eventsListModal').modal('hide');
+                
+                // Wait for modal to close, then show event details
+                setTimeout(() => {
+                    this.showEventDetails(dateStr, eventIndex);
+                }, 300);
+            }
+            
+            showToast(message, type = 'info') {
+                // Simple toast notification
+                const toastClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+                const iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+                
+                const toast = $(`
+                    <div class="toast-notification position-fixed top-0 end-0 m-3 p-3 ${toastClass} text-white rounded" style="z-index: 9999;">
+                        <i class="fas ${iconClass} me-2"></i>${message}
+                    </div>
+                `);
+                
+                $('body').append(toast);
+                
+                setTimeout(() => {
+                    toast.fadeOut(() => toast.remove());
+                }, 3000);
+            }
+        }
+        
+        // Initialize calendar when page loads
+        let calendar;
+        $(document).ready(() => {
+            calendar = new EventCalendar();
+        });
+    </script>
+</body>
+</html>
