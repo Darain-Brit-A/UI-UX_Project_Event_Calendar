@@ -47,7 +47,7 @@ No complex installation or build process is required. Simply clone the repositor
 - **Navigating the Calendar**: Use the `<` and `>` buttons in the header to switch between months. Use the `Go to Date` button to jump to a specific date.
 
 
-  ## Collaborators
+## Collaborators
 - [Gutha Nihitha](https://github.com/Nihitha47)
 - [San Maria Joby](https://github.com/SanMaria28)
 - [Darain Brit A](https://github.com/Darain-Brit-A)
