@@ -52,7 +52,8 @@ No complex installation or build process is required. Simply clone the repositor
 - [San Maria Joby](https://github.com/SanMaria28)
 - [Darain Brit A](https://github.com/Darain-Brit-A)
 
-## To open the website click on :[Calendar](https://sanmaria28.github.io/UI-UX_Project_Event_Calendar/)
+----
+## To open the website click on : [Calendar](https://sanmaria28.github.io/UI-UX_Project_Event_Calendar/)
 
 ## License
 
