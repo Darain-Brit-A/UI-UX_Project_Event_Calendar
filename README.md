@@ -46,6 +46,14 @@ No complex installation or build process is required. Simply clone the repositor
 - **Deleting an Event**: Inside the event details modal, click the `Delete Event` button. A confirmation prompt will appear before the event is permanently removed.
 - **Navigating the Calendar**: Use the `<` and `>` buttons in the header to switch between months. Use the `Go to Date` button to jump to a specific date.
 
+  ----
+  ## Collaborators
+- [Gutha Nihitha](https://github.com/Nihitha47)
+- [San Maria Joby](https://github.com/SanMaria28)
+- [Darain Brit A](https://github.com/Darain-Brit-A)
+
+## To open the website click on :[Calendar](https://sanmaria28.github.io/UI-UX_Project_Event_Calendar/)
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
